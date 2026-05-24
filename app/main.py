@@ -12,18 +12,21 @@ from app.database.database import (
 
 from app.models.analysis import Analysis
 from app.database.database import Base
+from app.schemas.analysis_schema import AnalysisResponse
 
 Base.metadata.create_all(bind=engine)
+
+from app.services.chart_service import generar_grafico
 
 app = FastAPI()
 
 @app.get("/")
 def home():
     return {
-        "mensaje": "Smart Sales Analytics API 🚀"
+        "mensaje": "Smart Sales Analytics API"
     }
 
-@app.post("/analizar")
+@app.post("/sales/analyze")
 async def analizar_csv(file: UploadFile = File(...)):
 
     if not file.filename.endswith(".csv"):
@@ -36,6 +39,8 @@ async def analizar_csv(file: UploadFile = File(...)):
     df = leer_csv(contenido)
 
     resultado = analizar_ventas(df)
+
+    grafico = generar_grafico(df)
 
     db: Session = SessionLocal()
 
@@ -56,10 +61,10 @@ async def analizar_csv(file: UploadFile = File(...)):
 
     return {
         "mensaje": "Análisis guardado correctamente",
-        "analisis": resultado
+        "analisis": resultado,
     }
 
-@app.get("/historial")
+@app.get("/sales/history", response_model=list[AnalysisResponse])
 def obtener_historial():
 
     db: Session = SessionLocal()
@@ -68,19 +73,12 @@ def obtener_historial():
 
     db.close()
 
-    resultado = []
-
-    for analysis in analyses:
-
-        resultado.append({
-            "id": analysis.id,
-            "archivo": analysis.archivo,
-            "ingresos_totales": analysis.ingresos_totales,
-            "producto_mas_vendido": analysis.producto_mas_vendido,
-            "promedio_venta": analysis.promedio_venta
-        })
-
-    return {
-        "total_analisis": len(resultado),
-        "data": resultado
-    }
+    return [
+        AnalysisResponse(
+            archivo=analysis.archivo,
+            ingresos_totales=analysis.ingresos_totales,
+            producto_mas_vendido=analysis.producto_mas_vendido,
+            promedio_venta=analysis.promedio_venta
+        )
+        for analysis in analyses
+    ]
