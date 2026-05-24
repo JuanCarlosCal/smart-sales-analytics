@@ -58,3 +58,29 @@ async def analizar_csv(file: UploadFile = File(...)):
         "mensaje": "Análisis guardado correctamente",
         "analisis": resultado
     }
+
+@app.get("/historial")
+def obtener_historial():
+
+    db: Session = SessionLocal()
+
+    analyses = db.query(Analysis).all()
+
+    db.close()
+
+    resultado = []
+
+    for analysis in analyses:
+
+        resultado.append({
+            "id": analysis.id,
+            "archivo": analysis.archivo,
+            "ingresos_totales": analysis.ingresos_totales,
+            "producto_mas_vendido": analysis.producto_mas_vendido,
+            "promedio_venta": analysis.promedio_venta
+        })
+
+    return {
+        "total_analisis": len(resultado),
+        "data": resultado
+    }
