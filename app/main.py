@@ -1,42 +1,26 @@
-from fastapi import FastAPI
-import pandas as pd
+from fastapi import FastAPI, UploadFile, File
+
+from app.services.analytics_service import analizar_ventas
+from app.utils.file_handler import leer_csv
 
 app = FastAPI()
 
 @app.get("/")
 def home():
     return {
-        "mensaje": "Smart Sales Analytics 🚀"
+        "mensaje": "Smart Sales Analytics API 🚀"
     }
 
-@app.get("/ventas")
-def analizar_ventas():
+@app.post("/analizar")
+async def analizar_csv(file: UploadFile = File(...)):
 
-    df = pd.read_csv("data/ventas.csv")
+    contenido = await file.read()
 
-    df["total"] = df["cantidad"] * df["precio"]
+    df = leer_csv(contenido)
 
-    ingresos_totales = df["total"].sum()
-
-    producto_mas_vendido = (
-        df.groupby("producto")["cantidad"]
-        .sum()
-        .idxmax()
-    )
-
-    promedio_venta = df["total"].mean()
-
-    ventas_por_producto = (
-    df.groupby("producto")["cantidad"]
-    .sum()
-    .to_dict()
-    )
+    resultado = analizar_ventas(df)
 
     return {
-    "empresa": "Smart Sales Analytics",
-    "ingresos_totales": int(ingresos_totales),
-    "producto_mas_vendido": producto_mas_vendido,
-    "promedio_venta": float(promedio_venta),
-    "ventas_por_producto": ventas_por_producto,
-    "cantidad_registros": len(df)
-}
+        "archivo": file.filename,
+        "analisis": resultado
+    }
