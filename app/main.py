@@ -18,7 +18,15 @@ Base.metadata.create_all(bind=engine)
 
 from app.services.chart_service import generar_grafico
 
+from fastapi.templating import Jinja2Templates
+from fastapi.staticfiles import StaticFiles
+from fastapi.requests import Request
+
 app = FastAPI()
+
+templates = Jinja2Templates(directory="app/templates")
+
+app.mount("/charts", StaticFiles(directory="charts"), name="charts")
 
 @app.get("/")
 def home():
@@ -82,3 +90,22 @@ def obtener_historial():
         )
         for analysis in analyses
     ]
+
+@app.get("/dashboard")
+def dashboard(request: Request):
+
+    db: Session = SessionLocal()
+
+    ultimo = db.query(Analysis).order_by(Analysis.id.desc()).first()
+
+    db.close()
+
+    return templates.TemplateResponse(
+        request=request,
+        name="dashboard.html",
+        context={
+            "ingresos": ultimo.ingresos_totales,
+            "producto": ultimo.producto_mas_vendido,
+            "promedio": ultimo.promedio_venta
+        }
+    )

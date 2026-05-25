@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Sales Dashboard</title>
+    <style>
+        body {
+            font-family: Arial;
+            margin: 40px;
+            background: #f4f4f4;
+        }
+
+        .card {
+            background: white;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 10px;
+        }
+
+        img {
+            width: 600px;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Smart Sales Dashboard</h1>
+
+    <div class="card">
+        <h2>Ingresos Totales</h2>
+        <p>${{ ingresos }}</p>
+    </div>
+
+    <div class="card">
+        <h2>Producto Más Vendido</h2>
+        <p>{{ producto }}</p>
+    </div>
+
+    <div class="card">
+        <h2>Promedio de Venta</h2>
+        <p>${{ promedio }}</p>
+    </div>
+
+    <div class="card">
+        <h2>Gráfico de Ventas</h2>
+        <img src="/charts/ventas_chart.png" alt="grafico">
+    </div>
+
+</body>
+</html>
