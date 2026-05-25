@@ -27,6 +27,7 @@ app = FastAPI()
 templates = Jinja2Templates(directory="app/templates")
 
 app.mount("/charts", StaticFiles(directory="charts"), name="charts")
+app.mount("/static", StaticFiles(directory="app/static"), name="static")
 
 @app.get("/")
 def home():
@@ -70,6 +71,7 @@ async def analizar_csv(file: UploadFile = File(...)):
     return {
         "mensaje": "Análisis guardado correctamente",
         "analisis": resultado,
+        "grafico": grafico
     }
 
 @app.get("/sales/history", response_model=list[AnalysisResponse])
